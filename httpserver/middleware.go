@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rabellamy/promstrap/strategy"
+	"github.com/rabellamy/server/metrics"
 )
 
 // REDMiddleware wraps an HTTP handler to collect RED metrics.
@@ -17,7 +18,7 @@ type REDMiddleware struct {
 
 // NewREDMiddleware creates a new RED metrics middleware.
 func NewREDMiddleware(namespace string, next http.Handler) (*REDMiddleware, error) {
-	red, err := newRED(namespace)
+	red, err := metrics.NewRED(namespace)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create RED metrics: %w", err)
 	}

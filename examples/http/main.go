@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/rabellamy/httpserver"
+	"github.com/rabellamy/server/httpserver"
 )
 
 func myHandler(w http.ResponseWriter, r *http.Request) {

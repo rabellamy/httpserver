@@ -1,10 +1,10 @@
-package httpserver
+package metrics
 
 import (
 	"github.com/rabellamy/promstrap/strategy"
 )
 
-func newRED(namespace string) (*strategy.RED, error) {
+func NewRED(namespace string) (*strategy.RED, error) {
 	red, err := strategy.NewRED(strategy.REDOpts{
 		Namespace: namespace,
 		RequestsOpt: strategy.REDRequestsOpt{

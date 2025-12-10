@@ -39,8 +39,8 @@ func CreateRoutes(routes Routes) *http.ServeMux {
 }
 
 func NewServer(ctx context.Context, config Config, routes Routes, logger *slog.Logger) (*httpServer, error) {
-	mux := CreateRoutes(routes)
-	handler, err := NewREDMiddleware(config.Namespace, mux)
+	mainMux := CreateRoutes(routes)
+	handler, err := NewREDMiddleware(config.Namespace, mainMux)
 	if err != nil {
 		return nil, err
 	}

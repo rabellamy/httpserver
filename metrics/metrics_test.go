@@ -1,4 +1,4 @@
-package httpserver
+package metrics
 
 import (
 	"testing"
@@ -36,7 +36,7 @@ func TestNewRED(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := newRED(tt.namespace)
+			got, err := NewRED(tt.namespace)
 
 			if tt.wantErr {
 				assert.Error(t, err)
