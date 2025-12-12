@@ -1,10 +1,20 @@
 package metrics
 
 import (
+	"fmt"
+	"regexp"
+
 	"github.com/rabellamy/promstrap/strategy"
 )
 
 func NewRED(namespace string) (*strategy.RED, error) {
+	// regex matches Prometheus metric name limits
+	// see: https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels
+	metricNameRegex := regexp.MustCompile(`^[a-zA-Z_:][a-zA-Z0-9_:]*$`)
+	if !metricNameRegex.MatchString(namespace) {
+		return nil, fmt.Errorf("namespace must match %s", metricNameRegex.String())
+	}
+
 	red, err := strategy.NewRED(strategy.REDOpts{
 		Namespace: namespace,
 		RequestsOpt: strategy.REDRequestsOpt{
