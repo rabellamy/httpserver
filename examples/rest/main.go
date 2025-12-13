@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/rabellamy/server/httpserver"
+	"github.com/rabellamy/server/rest"
 )
 
 func myHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,18 +22,18 @@ func anotherHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	config, err := httpserver.LoadConfig("test")
+	config, err := rest.LoadConfig("test")
 	if err != nil {
 		logger.Error("server instantiation failed", "err", err)
 		os.Exit(1)
 	}
 
-	routes := httpserver.Routes{
+	routes := rest.Routes{
 		"/myHandler":      myHandler,
 		"/anotherHandler": anotherHandler,
 	}
 
-	server, err := httpserver.NewServer(context.Background(), config, routes, logger)
+	server, err := rest.NewServer(context.Background(), config, routes, logger)
 	if err != nil {
 		logger.Error("server instantiation failed", "err", err)
 		os.Exit(1)
