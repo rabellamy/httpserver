@@ -32,7 +32,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/rabellamy/httpserver"
+	"github.com/rabellamy/server/httpserver"
 )
 
 func main() {

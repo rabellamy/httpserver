@@ -108,24 +108,43 @@ func TestRun(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		config  Config
-		wantErr bool
+		config     Config
+		wantErr    bool
+		sendSignal bool
+		cancelCtx  bool
 	}{
-		"valid config": {
+		"context cancellation shutdown": {
 			config: Config{
-				Namespace:   "test_run_valid",
-				APIHost:     "localhost:0",
-				MetricsHost: "0",
+				Namespace:       "test_run_ctx",
+				APIHost:         "localhost:0",
+				MetricsHost:     "localhost:0",
+				ShutdownTimeout: 5 * time.Second,
 			},
-			wantErr: false,
+			wantErr:    false,
+			cancelCtx:  true,
+			sendSignal: false,
+		},
+		"signal shutdown": {
+			config: Config{
+				Namespace:       "test_run_signal",
+				APIHost:         "localhost:0",
+				MetricsHost:     "localhost:0",
+				ShutdownTimeout: 5 * time.Second,
+			},
+			wantErr:    false,
+			cancelCtx:  false,
+			sendSignal: true,
 		},
 		"invalid metrics host": {
 			config: Config{
-				Namespace:   "test_run_invalid",
-				APIHost:     "localhost:0",
-				MetricsHost: "invalid-host:port",
+				Namespace:       "test_run_invalid",
+				APIHost:         "localhost:0",
+				MetricsHost:     "invalid-host:port",
+				ShutdownTimeout: 5 * time.Second,
 			},
-			wantErr: true,
+			wantErr:    true,
+			cancelCtx:  false,
+			sendSignal: false,
 		},
 	}
 
@@ -147,11 +166,23 @@ func TestRun(t *testing.T) {
 				errChan <- server.Run()
 			}()
 
+			// Give server time to start
+			time.Sleep(50 * time.Millisecond)
+
+			if tt.sendSignal {
+				// Send SIGINT to trigger signal shutdown path
+				p, err := os.FindProcess(os.Getpid())
+				assert.NoError(t, err)
+				err = p.Signal(os.Interrupt)
+				assert.NoError(t, err)
+			} else if tt.cancelCtx {
+				cancel()
+			}
+
 			if tt.wantErr {
 				err = <-errChan
 				assert.Error(t, err)
 			} else {
-				cancel()
 				err = <-errChan
 				assert.NoError(t, err)
 			}
@@ -219,7 +250,7 @@ func TestShutdownServers(t *testing.T) {
 					http.Get("http://" + ln.Addr().String() + "/block")
 				}()
 				// Give the request time to reach the handler
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(50 * time.Millisecond)
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), tt.ctxTimeout)

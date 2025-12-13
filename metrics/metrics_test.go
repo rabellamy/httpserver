@@ -28,7 +28,7 @@ func TestNewRED(t *testing.T) {
 		"invalid namespace": {
 			namespace: "123invalid",
 			want:      &strategy.RED{},
-			wantErr:   false,
+			wantErr:   true,
 		},
 	}
 
