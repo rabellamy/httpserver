@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/rabellamy/server/metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,6 +17,7 @@ func TestNewREDMiddleware(t *testing.T) {
 		next      http.Handler
 		want      *REDMiddleware
 		wantErr   bool
+		setup     func() error
 	}{
 		"base case": {
 			namespace: "foo",
@@ -47,10 +49,34 @@ func TestNewREDMiddleware(t *testing.T) {
 			want:      &REDMiddleware{},
 			wantErr:   false,
 		},
+		"register fail": {
+			namespace: "test_register_fail",
+			next:      nil,
+			want:      nil,
+			wantErr:   true,
+			setup: func() error {
+				red, err := metrics.NewRED("test_register_fail")
+				if err != nil {
+					return err
+				}
+				return red.Register()
+			},
+		},
+		"invalid namespace": {
+			namespace: "invalid-namespace",
+			next:      http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
+			want:      nil,
+			wantErr:   true,
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+			if tt.setup != nil {
+				if err := tt.setup(); err != nil {
+					t.Fatal(err)
+				}
+			}
 			got, gotErr := NewREDMiddleware(tt.namespace, tt.next)
 			if gotErr != nil {
 				if !tt.wantErr {
