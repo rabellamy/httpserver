@@ -110,8 +110,9 @@ func TestRun(t *testing.T) {
 	tests := map[string]struct {
 		config     Config
 		wantErr    bool
-		sendSignal bool
 		cancelCtx  bool
+		sendSignal bool
+		preCancel  bool
 	}{
 		"context cancellation shutdown": {
 			config: Config{
@@ -146,6 +147,15 @@ func TestRun(t *testing.T) {
 			cancelCtx:  false,
 			sendSignal: false,
 		},
+		"context pre-cancelled": {
+			config: Config{
+				Namespace:   "test_run_pre_cancel",
+				APIHost:     "localhost:0",
+				MetricsHost: "localhost:0",
+			},
+			wantErr:   false,
+			preCancel: true,
+		},
 	}
 
 	for name, tt := range tests {
@@ -157,6 +167,10 @@ func TestRun(t *testing.T) {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
+
+			if tt.preCancel {
+				cancel()
+			}
 
 			server, err := NewServer(ctx, tt.config, routes, logger)
 			assert.NoError(t, err)
